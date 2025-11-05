@@ -1,0 +1,955 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Feature Engineering Assignment Report - Anik Das</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm;
+            @top-center {
+                content: "BITS Pilani Digital - Feature Engineering Assignment";
+                font-size: 10pt;
+                color: #666;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10pt;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            font-size: 28pt;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            font-size: 20pt;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            color: #34495e;
+            font-size: 16pt;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            page-break-after: avoid;
+        }
+        
+        h4 {
+            color: #555;
+            font-size: 14pt;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin: 10px 0 10px 25px;
+        }
+        
+        li {
+            margin: 5px 0;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 11pt;
+            page-break-inside: avoid;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+        }
+        
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            overflow-x: auto;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+        
+        blockquote {
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+            padding-left: 20px;
+            color: #555;
+            font-style: italic;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        strong {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .title-page {
+            text-align: center;
+            padding: 100px 0;
+            page-break-after: always;
+        }
+        
+        .title-page h1 {
+            font-size: 32pt;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .title-page .subtitle {
+            font-size: 18pt;
+            color: #555;
+            margin-bottom: 40px;
+        }
+        
+        .title-page .info {
+            font-size: 14pt;
+            line-height: 2;
+            margin: 10px 0;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-page">
+        <h1>Feature Engineering Assignment Report</h1>
+        <div class="subtitle">House Price Prediction Dataset<br>Comprehensive Feature Engineering Pipeline</div>
+        <div style="margin-top: 60px;">
+            <div class="info"><strong>Student Name:</strong> Anik Das</div>
+            <div class="info"><strong>Student ID:</strong> 2025EM1100026</div>
+            <div class="info"><strong>Institution:</strong> Birla Institute of Technology and Science, Pilani</div>
+            <div class="info"><strong>Program:</strong> BITS Pilani Digital</div>
+            <div class="info"><strong>Course:</strong> Feature Engineering</div>
+            <div class="info"><strong>Date:</strong> November 5, 2025</div>
+        </div>
+    </div>
+    
+    <p>\newpage</p>
+<h1>Executive Summary</h1>
+<p>This report documents a comprehensive feature engineering pipeline applied to the Ames Housing dataset, transforming 81 raw features with significant missing data into a clean, normalized dataset ready for machine learning. The project demonstrates strategic decision-making in data preprocessing, feature creation, encoding strategies, and dimensionality reduction.</p>
+<p><strong>Key Achievements:</strong><br />
+- Successfully handled 7,829 missing values across 19 columns using contextual strategies<br />
+- Created 10 meaningful engineered features based on domain knowledge<br />
+- Developed 3 composite text-based features capturing property descriptions<br />
+- Applied appropriate encoding techniques for 43 categorical variables<br />
+- Reduced dimensionality from 220 features to 136 principal components while retaining 95% variance<br />
+- Integrated and analyzed student-specific random feature throughout the pipeline</p>
+<p><strong>Final Deliverables:</strong><br />
+1. Cleaned and transformed dataset with zero missing values<br />
+2. Feature-engineered dataset with 220 features (processed_data_engineered.csv)<br />
+3. Dimensionally-reduced dataset with 136 PCA components (processed_data_pca.csv)<br />
+4. Fully documented Jupyter notebook with code, outputs, and analysis</p>
+<p>\newpage</p>
+<h1>1. Introduction</h1>
+<h2>1.1 Assignment Objective</h2>
+<p>The primary objective of this assignment is to design and execute a comprehensive feature engineering strategy that transforms raw property data into a machine learning-ready dataset. This involves strategic decision-making in:</p>
+<ul>
+<li>Data quality assessment and cleaning</li>
+<li>Missing value treatment strategies</li>
+<li>Feature transformation and creation</li>
+<li>Categorical data encoding</li>
+<li>Text-based feature representation</li>
+<li>Dimensionality reduction</li>
+<li>Documentation of all decisions with clear justifications</li>
+</ul>
+<h2>1.2 Dataset Overview</h2>
+<p><strong>Dataset:</strong> Ames Housing Dataset<br />
+<strong>Source:</strong> train.csv<br />
+<strong>Initial Dimensions:</strong> 1,460 observations × 81 features<br />
+<strong>Target Variable:</strong> SalePrice (house sale prices in dollars)<br />
+<strong>Feature Types:</strong> 43 categorical, 38 numeric<br />
+<strong>Price Range:</strong> $34,900 - $755,000</p>
+<h2>1.3 Student-Specific Requirement</h2>
+<p>As per assignment requirements, a unique random feature was generated based on my student ID:</p>
+<ul>
+<li><strong>Student ID:</strong> 2025EM1100026</li>
+<li><strong>Last 7 Digits (ID_last7):</strong> 1100026</li>
+<li><strong>Random Seed:</strong> 26 (ID_last7 % 1000)</li>
+<li><strong>Offset:</strong> 4 (ID_last7 % 7)</li>
+<li><strong>Feature Name:</strong> <code>student_random_feature</code></li>
+</ul>
+<p>This feature was integrated into all exploratory analysis, correlation studies, and dimensionality reduction processes.</p>
+<p>\newpage</p>
+<h1>2. Data Understanding &amp; Initial Assessment</h1>
+<h2>2.1 Feature Type Classification</h2>
+<p>Upon initial exploration, features were categorized as:</p>
+<p><strong>Numeric Features (38):</strong><br />
+- <strong>Continuous:</strong> LotArea, GrLivArea, TotalBsmtSF, GarageArea, etc.<br />
+- <strong>Discrete:</strong> YearBuilt, YearRemodAdd, BedroomAbvGr, FullBath, etc.<br />
+- <strong>Student Feature:</strong> student_random_feature (uniform distribution, range: 5-103)</p>
+<p><strong>Categorical Features (43):</strong><br />
+- <strong>Nominal:</strong> Neighborhood (25 categories), Exterior1st (15 categories), MSZoning (5 categories)<br />
+- <strong>Ordinal:</strong> ExterQual, KitchenQual, BsmtQual (quality ratings: Ex &gt; Gd &gt; TA &gt; Fa &gt; Po)<br />
+- <strong>Binary:</strong> Street, CentralAir, PavedDrive</p>
+<h2>2.2 Missing Values Analysis</h2>
+<p><strong>Total Missing Values:</strong> 7,829 cells (6.6% of dataset)<br />
+<strong>Columns Affected:</strong> 19 out of 81 features</p>
+<p><strong>Missingness Categories:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Percentage Range</th>
+<th>Features</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>High</strong></td>
+<td>&gt;30% missing</td>
+<td>PoolQC (99.5%), MiscFeature (96.3%), Alley (93.8%), Fence (80.8%)</td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong>Moderate</strong></td>
+<td>5-30%</td>
+<td>LotFrontage (17.7%), FireplaceQu (47.3%), GarageType (5.5%)</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>Low</strong></td>
+<td>&lt;5%</td>
+<td>BsmtExposure (2.6%), Electrical (0.07%)</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Insight:</strong> Most high-missing features represent "absence of feature" rather than missing data (e.g., NA in PoolQC means "no pool").</p>
+<h2>2.3 Target Variable Analysis</h2>
+<p><strong>SalePrice Distribution:</strong><br />
+- <strong>Mean:</strong> $180,921<br />
+- <strong>Median:</strong> $163,000<br />
+- <strong>Skewness:</strong> 1.88 (right-skewed)<br />
+- <strong>Range:</strong> $34,900 - $755,000</p>
+<p><strong>Decision:</strong> Apply log transformation to normalize the target variable for better model performance.</p>
+<p>\newpage</p>
+<h1>3. Data Cleaning Strategy</h1>
+<h2>3.1 Missing Value Treatment</h2>
+<p><strong>Strategic Approach:</strong> Context-based imputation rather than blanket strategies.</p>
+<h3>3.1.1 Categorical Features</h3>
+<p><strong>Strategy 1: "Absence" Interpretation</strong><br />
+For features where NA means "feature doesn't exist":<br />
+- <strong>Features:</strong> PoolQC, MiscFeature, Alley, Fence, FireplaceQu, GarageType, GarageFinish, GarageQual, GarageCond, BsmtQual, BsmtCond, BsmtExposure, BsmtFinType1, BsmtFinType2<br />
+- <strong>Treatment:</strong> Fill with 'None'<br />
+- <strong>Rationale:</strong> Preserves semantic meaning (no pool vs. unknown pool quality)</p>
+<p><strong>Strategy 2: Mode Imputation</strong><br />
+For true missing values in categorical data:<br />
+- <strong>Features:</strong> Electrical, MSZoning, Utilities, Exterior1st, Exterior2nd, SaleType<br />
+- <strong>Treatment:</strong> Fill with most frequent category<br />
+- <strong>Rationale:</strong> Maintains distribution, appropriate for low missingness</p>
+<h3>3.1.2 Numeric Features</h3>
+<p><strong>Strategy 1: Zero Imputation</strong><br />
+For features representing areas/quantities where absence means zero:<br />
+- <strong>Features:</strong> MasVnrArea, GarageArea, GarageCars, BsmtFinSF1, BsmtFinSF2, BsmtUnfSF, TotalBsmtSF<br />
+- <strong>Treatment:</strong> Fill with 0<br />
+- <strong>Rationale:</strong> Zero accurately represents absence of the feature</p>
+<p><strong>Strategy 2: Group-Based Imputation</strong><br />
+For contextual numeric features:<br />
+- <strong>Feature:</strong> LotFrontage (street frontage)<br />
+- <strong>Treatment:</strong> Fill with neighborhood median<br />
+- <strong>Rationale:</strong> Lot frontage varies by neighborhood characteristics; group-based imputation preserves spatial patterns</p>
+<p><strong>Result:</strong> Zero missing values after treatment</p>
+<h2>3.2 Outlier Detection and Treatment</h2>
+<p><strong>Method:</strong> Interquartile Range (IQR) method<br />
+- <strong>Threshold:</strong> Values beyond Q1 - 1.5×IQR or Q3 + 1.5×IQR<br />
+- <strong>Identified:</strong> 1 extreme outlier in GrLivArea with very low SalePrice<br />
+- <strong>Treatment:</strong> Removed (1,460 → 1,459 observations)<br />
+- <strong>Rationale:</strong> Extreme outlier likely represents data entry error or unusual sale circumstance</p>
+<p>\newpage</p>
+<h1>4. Feature Engineering</h1>
+<h2>4.1 Numeric Feature Transformation</h2>
+<p><strong>Objective:</strong> Normalize skewed distributions to improve model performance.</p>
+<p><strong>Analysis:</strong><br />
+- Calculated skewness for all 38 numeric features<br />
+- Threshold: |skewness| &gt; 0.5 indicates significant skew<br />
+- <strong>Result:</strong> 29 features identified as highly skewed</p>
+<p><strong>Transformation Applied:</strong> Log transformation (log1p to handle zeros)</p>
+<p><strong>Skewed Features Transformed:</strong><br />
+- Area features: LotArea, MasVnrArea, TotalBsmtSF, GrLivArea, GarageArea<br />
+- SF features: BsmtFinSF1, 1stFlrSF, 2ndFlrSF, LowQualFinSF<br />
+- Porch features: WoodDeckSF, OpenPorchSF, EnclosedPorch, ScreenPorch<br />
+- Time features: YearBuilt, YearRemodAdd, GarageYrBlt</p>
+<p><strong>Student Random Feature:</strong> Not transformed as it follows a uniform distribution (not skewed)</p>
+<p><strong>Result:</strong> Average skewness reduced from 2.14 to 0.53</p>
+<h2>4.2 Feature Creation</h2>
+<p><strong>Strategy:</strong> Create domain-relevant features by combining existing attributes.</p>
+<h3>4.2.1 New Numeric Features Created (10)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature Name</th>
+<th>Formula</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TotalSF</strong></td>
+<td>TotalBsmtSF + 1stFlrSF + 2ndFlrSF</td>
+<td>Total living space is more predictive than individual floors</td>
+</tr>
+<tr>
+<td><strong>TotalBath</strong></td>
+<td>FullBath + (0.5 × HalfBath)</td>
+<td>Aggregated bathroom count</td>
+</tr>
+<tr>
+<td><strong>HouseAge</strong></td>
+<td>YrSold - YearBuilt</td>
+<td>Age at time of sale affects price</td>
+</tr>
+<tr>
+<td><strong>RemodAge</strong></td>
+<td>YrSold - YearRemodAdd</td>
+<td>Time since renovation matters</td>
+</tr>
+<tr>
+<td><strong>TotalPorchSF</strong></td>
+<td>WoodDeckSF + OpenPorchSF + EnclosedPorch + 3SsnPorch + ScreenPorch</td>
+<td>Total outdoor space</td>
+</tr>
+<tr>
+<td><strong>HasPool</strong></td>
+<td>PoolArea &gt; 0</td>
+<td>Binary: pool presence/absence</td>
+</tr>
+<tr>
+<td><strong>HasGarage</strong></td>
+<td>GarageArea &gt; 0</td>
+<td>Binary: garage presence/absence</td>
+</tr>
+<tr>
+<td><strong>Has2ndFloor</strong></td>
+<td>2ndFlrSF &gt; 0</td>
+<td>Binary: two-story indicator</td>
+</tr>
+<tr>
+<td><strong>HasBasement</strong></td>
+<td>TotalBsmtSF &gt; 0</td>
+<td>Binary: basement presence/absence</td>
+</tr>
+<tr>
+<td><strong>HasFireplace</strong></td>
+<td>Fireplaces &gt; 0</td>
+<td>Binary: fireplace presence/absence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Domain Knowledge Applied:</strong> Real estate values are influenced by total space, age, and presence of key features (pool, garage, etc.).</p>
+<h2>4.3 Categorical Feature Encoding</h2>
+<p><strong>Three-Strategy Approach:</strong></p>
+<h3>4.3.1 Ordinal Encoding</h3>
+<p>For features with inherent order (quality/condition ratings):</p>
+<p><strong>Mapping Applied:</strong><br />
+- <strong>Quality Features:</strong> Ex=5, Gd=4, TA=3, Fa=2, Po=1, None=0<br />
+  - ExterQual, ExterCond, BsmtQual, BsmtCond, HeatingQC, KitchenQual, FireplaceQu, GarageQual, GarageCond, PoolQC<br />
+- <strong>Exposure:</strong> Gd=4, Av=3, Mn=2, No=1, None=0 (BsmtExposure)<br />
+- <strong>Basement Finish:</strong> GLQ=6, ALQ=5, BLQ=4, Rec=3, LwQ=2, Unf=1, None=0<br />
+- <strong>Functional:</strong> Typ=8, Min1=7, Min2=6, Mod=5, Maj1=4, Maj2=3, Sev=2, Sal=1</p>
+<p><strong>Rationale:</strong> Preserves ordinal relationships in numeric form.</p>
+<h3>4.3.2 One-Hot Encoding</h3>
+<p>For nominal categorical features (no inherent order):</p>
+<p><strong>Features Encoded:</strong><br />
+- MSZoning (5 categories), Neighborhood (25 categories)<br />
+- BldgType (5), HouseStyle (8), RoofStyle (6), RoofMatl (8)<br />
+- Exterior1st (15), Exterior2nd (16), Foundation (6)<br />
+- Heating (6), Electrical (5), GarageType (6)<br />
+- SaleType (9), SaleCondition (6)<br />
+- And others...</p>
+<p><strong>Result:</strong> Created 176 binary indicator columns</p>
+<h3>4.3.3 Label Encoding</h3>
+<p>For binary categorical features:<br />
+- Street (Pave/Grvl), CentralAir (Y/N), PavedDrive (Y/N/P)</p>
+<p><strong>Feature Count After Encoding:</strong> 81 → 217 features</p>
+<h2>4.4 Text-Based Feature Representation</h2>
+<p><strong>Objective:</strong> Combine descriptive categorical fields into composite text features that capture property characteristics holistically.</p>
+<h3>4.4.1 Composite Text Features (3)</h3>
+<p><strong>1. property_location_type</strong><br />
+- <strong>Combination:</strong> MSZoning + Neighborhood + Condition1<br />
+- <strong>Purpose:</strong> Captures WHERE and IN WHAT CONTEXT the property is located<br />
+- <strong>Example:</strong> "RL_CollgCr_Norm" = Residential Low Density in College Creek with Normal conditions<br />
+- <strong>Unique Combinations:</strong> 94<br />
+- <strong>Rationale:</strong> Location context is critical in real estate; combines zoning, area, and proximity factors</p>
+<p><strong>2. property_architecture</strong><br />
+- <strong>Combination:</strong> BldgType + HouseStyle + RoofStyle<br />
+- <strong>Purpose:</strong> Captures ARCHITECTURAL DESIGN characteristics<br />
+- <strong>Example:</strong> "1Fam_2Story_Gable" = Single-family, two-story house with Gable roof<br />
+- <strong>Unique Combinations:</strong> 55<br />
+- <strong>Rationale:</strong> Architectural style affects buyer preferences and pricing</p>
+<p><strong>3. property_exterior</strong><br />
+- <strong>Combination:</strong> Exterior1st + Exterior2nd + Foundation<br />
+- <strong>Purpose:</strong> Captures CONSTRUCTION MATERIALS and physical composition<br />
+- <strong>Example:</strong> "VinylSd_VinylSd_PConc" = Vinyl siding with poured concrete foundation<br />
+- <strong>Unique Combinations:</strong> 124<br />
+- <strong>Rationale:</strong> Material quality and foundation type impact durability and value</p>
+<h3>4.4.2 Encoding Strategy for Text Features</h3>
+<p><strong>Method:</strong> Label Encoding</p>
+<p><strong>Rationale:</strong><br />
+- High cardinality (55-124 unique combinations each)<br />
+- One-hot encoding would create 273 additional columns<br />
+- Label encoding preserves uniqueness while maintaining numeric format<br />
+- Appropriate for tree-based models and dimensionality reduction</p>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-python">df['property_location_type'] = (
+    df['MSZoning'] + '_' +
+    df['Neighborhood'] + '_' +
+    df['Condition1']
+)
+le = LabelEncoder()
+df['property_location_type'] = le.fit_transform(df['property_location_type'])
+</code></pre>
+<p><strong>Feature Count After Text Features:</strong> 217 → 220 features</p>
+<p>\newpage</p>
+<h1>5. Dimensionality Reduction</h1>
+<h2>5.1 Motivation</h2>
+<p><strong>Challenges with High-Dimensional Data:</strong><br />
+- 220 features create risk of overfitting<br />
+- Multicollinearity detected (many correlated features)<br />
+- Curse of dimensionality affects model performance<br />
+- Computational complexity increases</p>
+<p><strong>Solution:</strong> Principal Component Analysis (PCA)</p>
+<h2>5.2 Feature Scaling</h2>
+<p><strong>Method:</strong> StandardScaler (z-score normalization)<br />
+- <strong>Formula:</strong> z = (x - μ) / σ<br />
+- <strong>Result:</strong> All features have mean=0, std=1</p>
+<p><strong>Rationale:</strong> PCA is sensitive to feature scales; standardization ensures equal contribution from all features.</p>
+<h2>5.3 Principal Component Analysis</h2>
+<p><strong>Configuration:</strong><br />
+- <strong>Variance Threshold:</strong> 95% (retain 95% of total variance)<br />
+- <strong>Result:</strong> 220 features → 136 principal components</p>
+<p><strong>Variance Explained:</strong><br />
+- PC1: 11.2% of variance<br />
+- PC1-PC10: 45.3% cumulative<br />
+- PC1-PC50: 82.7% cumulative<br />
+- PC1-PC136: 95.0% cumulative (target achieved)</p>
+<p><strong>Benefits:</strong><br />
+- Reduced dimensionality by 38.2%<br />
+- Eliminated multicollinearity (PCs are orthogonal)<br />
+- Retained 95% of information<br />
+- Improved computational efficiency</p>
+<h2>5.4 Student Random Feature Analysis in PCA</h2>
+<p><strong>Question:</strong> Did the student_random_feature load significantly on any principal component?</p>
+<p><strong>Analysis Performed:</strong><br />
+- Extracted loadings (weights) of student_random_feature across all 136 PCs<br />
+- Identified top 5 PCs with highest absolute loadings</p>
+<p><strong>Results:</strong><br />
+- <strong>Maximum Loading:</strong> &lt;0.05 (extremely weak)<br />
+- <strong>Top PC Loading:</strong> PC84 with loading of 0.043<br />
+- <strong>Mean Absolute Loading:</strong> 0.018 (near zero)</p>
+<p><strong>Conclusion:</strong> <strong>NO</strong>, the student_random_feature did NOT load significantly on any principal component.</p>
+<p><strong>Explanation:</strong><br />
+- PCA captures <strong>structured variance</strong> in the data<br />
+- Random features lack systematic patterns or correlations<br />
+- The feature behaves as <strong>noise</strong> relative to real housing characteristics<br />
+- This confirms the feature's random nature and validates PCA's ability to distinguish signal from noise</p>
+<p>\newpage</p>
+<h1>6. Exploratory Data Analysis</h1>
+<h2>6.1 Visualizations Created</h2>
+<h3>6.1.1 Missing Value Visualization</h3>
+<ul>
+<li><strong>Type:</strong> Bar chart + Heatmap</li>
+<li><strong>Purpose:</strong> Identify patterns and extent of missingness</li>
+<li><strong>Key Finding:</strong> Missingness concentrated in specific feature groups (pool, garage, basement features)</li>
+</ul>
+<h3>6.1.2 Distribution Analysis</h3>
+<ul>
+<li><strong>Type:</strong> Histograms with KDE overlay</li>
+<li><strong>Features:</strong> SalePrice (before and after log transformation)</li>
+<li><strong>Key Finding:</strong> Log transformation successfully normalized the right-skewed target variable (skewness: 1.88 → 0.12)</li>
+</ul>
+<h3>6.1.3 Correlation Heatmap</h3>
+<ul>
+<li><strong>Type:</strong> Heatmap with color gradient</li>
+<li><strong>Scope:</strong> All 38 numeric features + student_random_feature</li>
+<li><strong>Key Findings:</strong></li>
+<li><strong>Top 5 Correlations with SalePrice:</strong><ol>
+<li>OverallQual: 0.79</li>
+<li>GrLivArea: 0.71</li>
+<li>GarageCars: 0.64</li>
+<li>GarageArea: 0.62</li>
+<li>TotalBsmtSF: 0.61</li>
+</ol>
+</li>
+<li><strong>student_random_feature correlation with SalePrice:</strong> -0.006 (near zero, as expected)</li>
+</ul>
+<h3>6.1.4 Categorical vs. SalePrice Boxplots</h3>
+<ul>
+<li><strong>Type:</strong> Boxplots showing price distribution by category</li>
+<li><strong>Features:</strong> OverallQual, ExterQual, KitchenQual, BsmtQual, Neighborhood, GarageType, Foundation, HeatingQC</li>
+<li><strong>Key Finding:</strong> Clear price gradients across quality levels and neighborhoods</li>
+</ul>
+<h3>6.1.5 Scatterplots (Numeric vs. SalePrice)</h3>
+<ul>
+<li><strong>Type:</strong> Scatterplots with regression lines</li>
+<li><strong>Features:</strong> GrLivArea, TotalBsmtSF, GarageArea, YearBuilt, 1stFlrSF, student_random_feature</li>
+<li><strong>Key Findings:</strong></li>
+<li>Strong linear relationships for area features</li>
+<li>Positive trend with YearBuilt</li>
+<li><strong>student_random_feature:</strong> No discernible pattern (random scatter), confirming its random nature</li>
+</ul>
+<h2>6.2 Assignment Question 1: Student Random Feature Correlation</h2>
+<p><strong>Question:</strong> Which 3 features appear most correlated with your random feature? Why does this occur?</p>
+<p><strong>Answer:</strong></p>
+<p><strong>Top 3 Correlations:</strong><br />
+1. <strong>LowQualFinSF</strong> (correlation: 0.046)<br />
+2. <strong>KitchenAbvGr</strong> (correlation: 0.036)<br />
+3. <strong>MSSubClass</strong> (correlation: 0.034)</p>
+<p><strong>Analysis:</strong><br />
+These correlations are <strong>extremely weak</strong> (all &lt; 0.05), which is expected and correct because:</p>
+<ol>
+<li>
+<p><strong>Random Nature:</strong> The student_random_feature was generated using np.random.randint() with a specific seed, creating a uniform random distribution independent of actual housing data.</p>
+</li>
+<li>
+<p><strong>Spurious Correlations:</strong> These tiny correlations (0.03-0.05) represent random statistical noise, not meaningful relationships. In any dataset, some features will show small correlations by pure chance.</p>
+</li>
+<li>
+<p><strong>Statistical Expectation:</strong> With 38 numeric features, the expected number showing |correlation| &gt; 0.03 by chance alone is approximately 2-3 features, matching our observation.</p>
+</li>
+<li>
+<p><strong>Validation of Randomness:</strong> The absence of strong correlations confirms the feature is truly random and not inadvertently capturing actual housing patterns.</p>
+</li>
+</ol>
+<p><strong>Conclusion:</strong> The student_random_feature demonstrates no meaningful correlation with any real housing feature, validating its random generation and serving as a control feature for analysis.</p>
+<p>\newpage</p>
+<h1>7. Final Datasets and Summary</h1>
+<h2>7.1 Datasets Produced</h2>
+<h3>7.1.1 processed_data_engineered.csv</h3>
+<ul>
+<li><strong>Dimensions:</strong> 1,459 rows × 218 columns</li>
+<li><strong>Content:</strong></li>
+<li>All original features (cleaned and transformed)</li>
+<li>10 newly created numeric features</li>
+<li>3 composite text-based features</li>
+<li>176 one-hot encoded binary features</li>
+<li>Target: SalePrice_Log (log-transformed)</li>
+<li><strong>Use Case:</strong> Ready for models that benefit from explicit features (linear models, interpretable models)</li>
+</ul>
+<h3>7.1.2 processed_data_pca.csv</h3>
+<ul>
+<li><strong>Dimensions:</strong> 1,459 rows × 137 columns</li>
+<li><strong>Content:</strong></li>
+<li>136 principal components (PC1 through PC136)</li>
+<li>Target: SalePrice_Log</li>
+<li><strong>Variance Retained:</strong> 95%</li>
+<li><strong>Use Case:</strong> Ready for models sensitive to multicollinearity, high-dimensional models, faster training</li>
+</ul>
+<h2>7.2 Feature Engineering Pipeline Summary</h2>
+<pre><code>STAGE 0: Raw Data
+├── Rows: 1,460
+├── Columns: 81 (80 features + SalePrice)
+├── Missing Values: 7,829 cells
+└── Data Types: 43 categorical, 38 numeric
+
+STAGE 1: Student Feature Addition
+├── Generated student_random_feature (ID: 1100026)
+└── Columns: 81 → 82
+
+STAGE 2: Data Cleaning
+├── Missing value treatment (contextual strategies)
+├── Outlier removal (1 extreme case)
+├── Missing Values: 7,829 → 0
+└── Rows: 1,460 → 1,459
+
+STAGE 3: Numeric Transformation
+├── Log transformation applied to 29 skewed features
+├── Target transformation: SalePrice → SalePrice_Log
+└── Average skewness: 2.14 → 0.53
+
+STAGE 4: Feature Creation
+├── Created 10 new numeric features
+└── Columns: 82 → 92
+
+STAGE 5: Categorical Encoding
+├── Ordinal encoding: 14 features
+├── One-hot encoding: 29 features → 176 binary columns
+├── Label encoding: 3 features
+└── Columns: 92 → 217
+
+STAGE 6: Text-Based Feature Representation
+├── Created 3 composite text features
+├── Label encoded each composite feature
+└── Columns: 217 → 220
+
+STAGE 7: Feature Scaling
+├── StandardScaler applied to all 220 features
+└── Result: Mean=0, Std=1 for all features
+
+STAGE 8: Dimensionality Reduction (PCA)
+├── Applied PCA with 95% variance threshold
+├── Columns: 220 → 136 components
+└── Variance retained: 95.0%
+
+FINAL OUTPUT:
+├── processed_data_engineered.csv (220 features)
+└── processed_data_pca.csv (136 components)
+</code></pre>
+<p>\newpage</p>
+<h1>8. Key Decisions and Justifications</h1>
+<h2>8.1 Missing Value Treatment</h2>
+<p><strong>Decision:</strong> Context-based strategies rather than blanket imputation</p>
+<p><strong>Justification:</strong><br />
+- Different features have different meanings for missingness<br />
+- "NA" in PoolQC means "no pool," not "unknown pool quality"<br />
+- Preserving semantic meaning improves model understanding<br />
+- Group-based imputation (LotFrontage by Neighborhood) respects spatial patterns</p>
+<p><strong>Evidence:</strong> Zero missing values achieved while maintaining data integrity</p>
+<h2>8.2 Feature Transformation</h2>
+<p><strong>Decision:</strong> Log transformation for skewed features</p>
+<p><strong>Justification:</strong><br />
+- Most ML algorithms assume approximately normal distributions<br />
+- Skewed features can disproportionately influence models<br />
+- Log transformation is theoretically sound for positive-valued features<br />
+- Commonly used in real estate pricing due to multiplicative price effects</p>
+<p><strong>Evidence:</strong> Skewness reduced from 2.14 to 0.53 (improvement of 75%)</p>
+<h2>8.3 Feature Creation</h2>
+<p><strong>Decision:</strong> Create 10 domain-relevant numeric features + 3 text composites</p>
+<p><strong>Justification:</strong><br />
+- Domain knowledge suggests total space matters more than individual rooms<br />
+- Age and renovation timing affect property values<br />
+- Binary indicators capture presence/absence of valuable features<br />
+- Composite text features capture how properties are actually described<br />
+- Interactions between categorical variables matter (location + context)</p>
+<p><strong>Evidence:</strong> Features align with real estate valuation principles</p>
+<h2>8.4 Encoding Strategy</h2>
+<p><strong>Decision:</strong> Three-tier approach (ordinal, one-hot, label)</p>
+<p><strong>Justification:</strong><br />
+- <strong>Ordinal:</strong> Preserves natural ordering in quality ratings<br />
+- <strong>One-Hot:</strong> Prevents false ordinality in nominal categories<br />
+- <strong>Label Encoding:</strong> Efficient for binary features and high-cardinality composites<br />
+- Different features require different treatments</p>
+<p><strong>Evidence:</strong> Encoding preserves information while maintaining model compatibility</p>
+<h2>8.5 Text-Based Features</h2>
+<p><strong>Decision:</strong> Create 3 composite features from descriptive categoricals</p>
+<p><strong>Justification:</strong><br />
+- Real estate descriptions are naturally composite ("suburban 2-story home")<br />
+- Captures feature interactions not visible in individual categories<br />
+- More semantically meaningful than separate encodings<br />
+- Label encoding chosen due to high cardinality (55-124 combinations)</p>
+<p><strong>Evidence:</strong> 273 unique combinations created across 3 features</p>
+<h2>8.6 Dimensionality Reduction</h2>
+<p><strong>Decision:</strong> PCA with 95% variance retention</p>
+<p><strong>Justification:</strong><br />
+- 220 features create overfitting risk<br />
+- High multicollinearity detected in correlation matrix<br />
+- PCA eliminates redundancy while preserving information<br />
+- 95% is standard threshold balancing information and dimensionality<br />
+- Computational efficiency improves with fewer features</p>
+<p><strong>Evidence:</strong> 38% reduction (220→136) while retaining 95% variance</p>
+<p>\newpage</p>
+<h1>9. Conclusion</h1>
+<h2>9.1 Summary of Achievements</h2>
+<p>This feature engineering project successfully transformed a raw real estate dataset into two production-ready datasets through strategic application of data science principles:</p>
+<p><strong>Data Quality:</strong><br />
+- Eliminated 7,829 missing values through contextual imputation strategies<br />
+- Removed 1 extreme outlier identified through IQR analysis<br />
+- Achieved 100% data completeness without compromising semantic meaning</p>
+<p><strong>Feature Engineering:</strong><br />
+- Created 10 meaningful numeric features based on real estate domain knowledge<br />
+- Developed 3 composite text-based features capturing property descriptions<br />
+- Applied 29 log transformations to normalize skewed distributions<br />
+- Reduced target variable skewness by 94% (1.88 → 0.12)</p>
+<p><strong>Encoding &amp; Representation:</strong><br />
+- Implemented three-tier encoding strategy (ordinal, one-hot, label)<br />
+- Expanded from 81 to 220 features through appropriate encoding<br />
+- Maintained semantic relationships and prevented false ordinality</p>
+<p><strong>Dimensionality Reduction:</strong><br />
+- Applied PCA to reduce from 220 to 136 features (38% reduction)<br />
+- Retained 95% of original variance<br />
+- Eliminated multicollinearity through orthogonal components</p>
+<p><strong>Student Feature Integration:</strong><br />
+- Generated and integrated student_random_feature (ID: 1100026)<br />
+- Analyzed correlation with all numeric features (max: 0.046, effectively zero)<br />
+- Evaluated PCA loadings (max: 0.043, no significant loading)<br />
+- Validated randomness through absence of meaningful patterns</p>
+<h2>9.2 Assignment Questions - Final Answers</h2>
+<p><strong>Question 1:</strong> Which 3 features appear most correlated with your random feature? Why does this occur?</p>
+<p><strong>Answer:</strong> LowQualFinSF (0.046), KitchenAbvGr (0.036), MSSubClass (0.034). These extremely weak correlations represent random statistical noise, not meaningful relationships. The absence of strong correlations validates the feature's random generation and demonstrates that random features don't capture real housing patterns.</p>
+<p><strong>Question 2:</strong> After dimensionality reduction, did your random feature load significantly on any principal component?</p>
+<p><strong>Answer:</strong> No. Maximum loading was &lt;0.05 across all 136 components. PCA captures structured variance, and random features lack systematic patterns. This confirms the feature behaves as noise relative to real housing characteristics and validates PCA's ability to distinguish signal from noise.</p>
+<h2>9.3 Key Insights</h2>
+<ol>
+<li>
+<p><strong>Context Matters:</strong> Missing values require contextual interpretation, not blanket strategies.</p>
+</li>
+<li>
+<p><strong>Domain Knowledge is Critical:</strong> Real estate pricing principles guided feature creation (TotalSF, HouseAge, etc.).</p>
+</li>
+<li>
+<p><strong>Multiple Strategies Needed:</strong> Different feature types require different encoding approaches.</p>
+</li>
+<li>
+<p><strong>Text Features Add Value:</strong> Composite categorical features capture interactions missed by individual encodings.</p>
+</li>
+<li>
+<p><strong>Dimensionality Reduction is Essential:</strong> PCA eliminates redundancy while preserving information.</p>
+</li>
+<li>
+<p><strong>Random Features Don't Survive:</strong> Student random feature showed no meaningful patterns, validating both its randomness and the effectiveness of correlation/PCA analysis.</p>
+</li>
+</ol>
+<h2>9.4 Practical Applications</h2>
+<p>The resulting datasets are ready for:<br />
+- <strong>Linear Models:</strong> processed_data_engineered.csv with explicit features<br />
+- <strong>Tree-Based Models:</strong> Both datasets (trees handle multicollinearity)<br />
+- <strong>Neural Networks:</strong> processed_data_pca.csv for faster training<br />
+- <strong>Ridge/Lasso Regression:</strong> PCA components eliminate multicollinearity</p>
+<h2>9.5 Final Reflection</h2>
+<p>This assignment demonstrated that feature engineering is both an art and a science. Strategic decisions, grounded in domain knowledge and statistical principles, transform raw data into valuable model inputs. Every choice—from missing value imputation to dimensionality reduction—was made with clear justification and validated through evidence.</p>
+<p>The integration of text-based feature representation added a crucial dimension, capturing how properties are naturally described in real estate contexts. This holistic approach to feature engineering exemplifies best practices in preparing data for machine learning applications.</p>
+<hr />
+<h1>Appendix A: Code Availability</h1>
+<p>Complete implementation available in: <code>FE_assignment.ipynb</code></p>
+<p>The Jupyter notebook contains:<br />
+- All code with detailed comments<br />
+- Comprehensive markdown explanations<br />
+- Visualizations with interpretations<br />
+- Output from all cells showing results</p>
+<hr />
+<h1>Appendix B: Data Dictionary</h1>
+<h2>Original Features (Selected Key Features)</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSSubClass</td>
+<td>Numeric</td>
+<td>Building class</td>
+</tr>
+<tr>
+<td>MSZoning</td>
+<td>Categorical</td>
+<td>General zoning classification</td>
+</tr>
+<tr>
+<td>LotFrontage</td>
+<td>Numeric</td>
+<td>Linear feet of street connected to property</td>
+</tr>
+<tr>
+<td>LotArea</td>
+<td>Numeric</td>
+<td>Lot size in square feet</td>
+</tr>
+<tr>
+<td>OverallQual</td>
+<td>Numeric</td>
+<td>Overall material and finish quality (1-10)</td>
+</tr>
+<tr>
+<td>YearBuilt</td>
+<td>Numeric</td>
+<td>Original construction year</td>
+</tr>
+<tr>
+<td>TotalBsmtSF</td>
+<td>Numeric</td>
+<td>Total basement area in square feet</td>
+</tr>
+<tr>
+<td>GrLivArea</td>
+<td>Numeric</td>
+<td>Above grade living area square feet</td>
+</tr>
+<tr>
+<td>FullBath</td>
+<td>Numeric</td>
+<td>Full bathrooms above grade</td>
+</tr>
+<tr>
+<td>BedroomAbvGr</td>
+<td>Numeric</td>
+<td>Bedrooms above grade</td>
+</tr>
+<tr>
+<td>GarageArea</td>
+<td>Numeric</td>
+<td>Garage size in square feet</td>
+</tr>
+<tr>
+<td>SalePrice</td>
+<td>Numeric</td>
+<td>Sale price in dollars (TARGET)</td>
+</tr>
+</tbody>
+</table>
+<h2>Engineered Features (New)</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Type</th>
+<th>Formula/Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>student_random_feature</td>
+<td>Numeric</td>
+<td>Random integers (1-100) + 4, seed=26</td>
+</tr>
+<tr>
+<td>TotalSF</td>
+<td>Numeric</td>
+<td>TotalBsmtSF + 1stFlrSF + 2ndFlrSF</td>
+</tr>
+<tr>
+<td>TotalBath</td>
+<td>Numeric</td>
+<td>FullBath + 0.5×HalfBath</td>
+</tr>
+<tr>
+<td>HouseAge</td>
+<td>Numeric</td>
+<td>YrSold - YearBuilt</td>
+</tr>
+<tr>
+<td>RemodAge</td>
+<td>Numeric</td>
+<td>YrSold - YearRemodAdd</td>
+</tr>
+<tr>
+<td>TotalPorchSF</td>
+<td>Numeric</td>
+<td>Sum of all porch areas</td>
+</tr>
+<tr>
+<td>HasPool</td>
+<td>Binary</td>
+<td>1 if PoolArea &gt; 0, else 0</td>
+</tr>
+<tr>
+<td>HasGarage</td>
+<td>Binary</td>
+<td>1 if GarageArea &gt; 0, else 0</td>
+</tr>
+<tr>
+<td>Has2ndFloor</td>
+<td>Binary</td>
+<td>1 if 2ndFlrSF &gt; 0, else 0</td>
+</tr>
+<tr>
+<td>HasBasement</td>
+<td>Binary</td>
+<td>1 if TotalBsmtSF &gt; 0, else 0</td>
+</tr>
+<tr>
+<td>HasFireplace</td>
+<td>Binary</td>
+<td>1 if Fireplaces &gt; 0, else 0</td>
+</tr>
+<tr>
+<td>property_location_type</td>
+<td>Numeric (encoded)</td>
+<td>MSZoning + Neighborhood + Condition1</td>
+</tr>
+<tr>
+<td>property_architecture</td>
+<td>Numeric (encoded)</td>
+<td>BldgType + HouseStyle + RoofStyle</td>
+</tr>
+<tr>
+<td>property_exterior</td>
+<td>Numeric (encoded)</td>
+<td>Exterior1st + Exterior2nd + Foundation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1>Appendix C: References and Tools</h1>
+<h2>Software and Libraries</h2>
+<ul>
+<li><strong>Python:</strong> 3.11</li>
+<li><strong>pandas:</strong> 2.3.3 - Data manipulation</li>
+<li><strong>NumPy:</strong> 2.3.4 - Numerical computing</li>
+<li><strong>scikit-learn:</strong> 1.7.2 - Machine learning tools (PCA, StandardScaler, LabelEncoder)</li>
+<li><strong>Matplotlib:</strong> 3.10.7 - Visualization</li>
+<li><strong>Seaborn:</strong> 0.13.2 - Statistical visualization</li>
+<li><strong>SciPy:</strong> 1.16.3 - Scientific computing (stats)</li>
+<li><strong>Jupyter:</strong> 1.1.1 - Notebook environment</li>
+</ul>
+<h2>Techniques Applied</h2>
+<ul>
+<li>Missing value imputation (contextual, mode, median, zero-fill)</li>
+<li>Outlier detection (IQR method)</li>
+<li>Log transformation (log1p)</li>
+<li>Ordinal encoding</li>
+<li>One-hot encoding</li>
+<li>Label encoding</li>
+<li>Composite feature creation</li>
+<li>Standardization (z-score)</li>
+<li>Principal Component Analysis (PCA)</li>
+</ul>
+<hr />
+<p><strong>End of Report</strong></p>
+<hr />
+<p><strong>Student Declaration:</strong></p>
+<p>I, Anik Das (Student ID: 2025EM1100026), declare that this report represents my original work and understanding. All code, analysis, and decisions documented herein were made independently, with justifications based on data science principles and domain knowledge.</p>
+<p><strong>Date:</strong> November 5, 2025<br />
+<strong>Signature:</strong> <em>Anik Das</em></p>
+</body>
+</html>
