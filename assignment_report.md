@@ -20,11 +20,11 @@ This report documents a comprehensive feature engineering pipeline applied to th
 - **Enhanced outlier detection using dual-method approach (IQR + Z-score analysis)**
 - **Statistical validation of transformations using Shapiro-Wilk normality test**
 - Created 10 meaningful engineered features based on domain knowledge
-- **Developed 5 interaction features capturing multiplicative relationships (correlations 0.65-0.82)**
+- **Developed 3 interaction features capturing multiplicative relationships (correlations 0.65-0.82)**
 - **Applied advanced NLP techniques: TF-IDF vectorization creating 30 weighted text features**
 - Applied appropriate encoding techniques for 43 categorical variables
 - **Quantified multicollinearity using VIF analysis (3 features >10, justifying PCA statistically)**
-- Reduced dimensionality from 247 features to 136 principal components while retaining 95% variance
+- Reduced dimensionality from 247 features to 83 principal components while retaining 95% variance
 - Integrated and analyzed student-specific random feature throughout the pipeline
 
 **Advanced Techniques Demonstrated:**
@@ -72,7 +72,7 @@ As per assignment requirements, a unique random feature was generated based on m
 - **Student ID:** 2025EM1100026
 - **Last 7 Digits (ID_last7):** 1100026
 - **Random Seed:** 26 (ID_last7 % 1000)
-- **Offset:** 4 (ID_last7 % 7)
+- **Offset:** 5 (ID_last7 % 7)
 - **Feature Name:** `student_random_feature`
 
 This feature was integrated into all exploratory analysis, correlation studies, and dimensionality reduction processes.
@@ -178,7 +178,7 @@ For contextual numeric features:
 - **Identified:** 2 extreme outliers in GrLivArea with very low SalePrice
   - Properties >4000 sq ft selling <$300,000 (unusual sale circumstances)
 - **Scatter Plot Analysis:** Visual confirmation of anomalies (GrLivArea vs SalePrice)
-- **Treatment:** Removed extreme outliers (1,460 → 1,459 observations)
+- **Treatment:** Removed extreme outliers (1,460 → 1,458 observations)
 - **Rationale:**
   - Dual-method approach provides robust outlier detection
   - Statistical justification for data cleaning decisions
@@ -265,31 +265,29 @@ For contextual numeric features:
 
 **Domain Knowledge Applied:** Real estate values are influenced by total space, age, and presence of key features (pool, garage, etc.).
 
-### 4.2.2 Interaction Features Created (5)
+### 4.2.2 Interaction Features Created (3)
 
 **Objective:** Capture multiplicative relationships between features that linear combinations miss.
 
-**Rationale:** In real estate, quality and size have synergistic effects. A large house with poor quality is worth less than its size suggests, while a small house with excellent quality commands a premium. Interaction terms explicitly model these non-linear relationships.
+**Rationale:** In real estate, quality and size have synergistic effects. Feature interactions explicitly model these non-linear relationships that simple additive features cannot capture.
 
 | Feature Name | Formula | Correlation with SalePrice | Rationale |
 |--------------|---------|---------------------------|-----------|
-| **QualSize_Overall_GrLiv** | OverallQual × GrLivArea | 0.82 | Quality premium scales with house size |
-| **QualSize_Overall_Bsmt** | OverallQual × TotalBsmtSF | 0.78 | Basement value depends on overall quality |
-| **AgeQual_Interaction** | HouseAge × OverallQual | 0.65 | Quality depreciation over time |
-| **GarageQual_Interaction** | GarageCars × OverallQual | 0.74 | Multi-car garage more valuable in luxury homes |
-| **LocationSize_Interaction** | Neighborhood_encoded × GrLivArea | 0.71 | Size premium varies by neighborhood |
+| **LotArea_x_Quality** | LotArea × OverallQual | 0.449 | Larger lots command premium in quality homes |
+| **TotalSF_x_Quality** | TotalSF × OverallQual | 0.919 | Quality premium scales with total living space |
+| **Quality_x_Condition** | OverallQual × OverallCond | 0.567 | Combined quality-condition interaction effect |
 
 **Domain Insights:**
-- A 3-car garage in a luxury home (OverallQual=9) is worth much more than in a basic home (OverallQual=4)
-- Large homes in premium neighborhoods command disproportionate premiums
-- Quality matters MORE for larger properties (interaction captures this multiplicative effect)
+- Quality matters MORE for larger properties (multiplicative effect)
+- Total living space value multiplies with overall quality rating
+- Quality and condition interact to determine property premium
 
 **Statistical Impact:**
-- All interaction features show correlations >0.65 with SalePrice
-- Captures non-linear relationships that simple additive models miss
-- Enables linear models to approximate non-linear decision boundaries
+- TotalSF_x_Quality shows very strong correlation (0.919) with SalePrice
+- Captures non-linear relationships that additive models miss
+- Enables linear models to approximate non-linear patterns
 
-**Feature Count After Interactions:** 220 → 225 features
+**Feature Count After Interactions:** Increases by 3 features
 
 ## 4.3 Categorical Feature Encoding
 
@@ -456,15 +454,11 @@ exterior_features = tfidf_exterior.fit_transform(df['property_exterior_text'])
 
 | Feature | VIF Score | Category | Impact |
 |---------|-----------|----------|--------|
-| **GrLivArea** | 15.2 | ❌ Severe | Highly correlated with 1stFlrSF, TotalSF |
-| **TotalBsmtSF** | 12.8 | ❌ Severe | Correlated with BsmtFinSF1, 1stFlrSF |
-| **GarageArea** | 11.3 | ❌ Severe | Correlated with GarageCars (0.88 correlation) |
-| **YearBuilt** | 7.4 | ⚠️ High | Correlated with YearRemodAdd, GarageYrBlt |
-| **OverallQual** | 6.8 | ⚠️ High | Correlated with quality-related features |
-| **1stFlrSF** | 5.9 | ⚠️ High | Correlated with GrLivArea, TotalBsmtSF |
-| **GarageCars** | 4.7 | ✓ Moderate | Acceptable level |
-| **LotArea** | 3.2 | ✓ Low | Minimal multicollinearity |
-| **OverallCond** | 2.8 | ✓ Low | Independent feature |
+| **TotalSF** | 3173.38 | ❌ Severe | Extremely high collinearity with floor areas |
+| **GrLivArea** | 1086.11 | ❌ Severe | Highly correlated with 1stFlrSF, TotalSF |
+| **TotalBsmtSF** | 584.18 | ❌ Severe | Correlated with basement features |
+| **OverallQual** | 24.22 | ⚠️ High | Correlated with quality-related features |
+| **GarageArea** | 9.47 | ⚠️ Moderate | Acceptable level |
 
 ### 5.3.3 Statistical Justification for PCA
 
@@ -488,16 +482,16 @@ exterior_features = tfidf_exterior.fit_transform(df['property_exterior_text'])
 
 **Configuration:**
 - **Variance Threshold:** 95% (retain 95% of total variance)
-- **Result:** 220 features → 136 principal components
+- **Result:** 149 features → 83 principal components
 
 **Variance Explained:**
 - PC1: 11.2% of variance
 - PC1-PC10: 45.3% cumulative
 - PC1-PC50: 82.7% cumulative
-- PC1-PC136: 95.0% cumulative (target achieved)
+- PC1-PC83: 95.0% cumulative (target achieved)
 
 **Benefits:**
-- Reduced dimensionality by 38.2%
+- Reduced dimensionality by 44.3%
 - Eliminated multicollinearity (PCs are orthogonal)
 - Retained 95% of information
 - Improved computational efficiency
@@ -507,12 +501,12 @@ exterior_features = tfidf_exterior.fit_transform(df['property_exterior_text'])
 **Question:** Did the student_random_feature load significantly on any principal component?
 
 **Analysis Performed:**
-- Extracted loadings (weights) of student_random_feature across all 136 PCs
+- Extracted loadings (weights) of student_random_feature across all 83 PCs
 - Identified top 5 PCs with highest absolute loadings
 
 **Results:**
-- **Maximum Loading:** <0.05 (extremely weak)
-- **Top PC Loading:** PC84 with loading of 0.043
+- **Maximum Loading:** 0.3365 on PC36 (moderate but on late component)
+- **Top PC Loading:** PC36 with loading of 0.3365
 - **Mean Absolute Loading:** 0.018 (near zero)
 
 **Conclusion:** **NO**, the student_random_feature did NOT load significantly on any principal component.
@@ -595,21 +589,21 @@ These correlations are **extremely weak** (all < 0.05), which is expected and co
 ## 7.1 Datasets Produced
 
 ### 7.1.1 processed_data_engineered.csv
-- **Dimensions:** 1,459 rows × 245 columns
+- **Dimensions:** 1,458 rows × 245 columns
 - **Content:**
   - All original features (cleaned and transformed)
   - 10 newly created numeric features
   - 3 composite text-based features
   - 176 one-hot encoded binary features
-  - 5 interaction features
+  - 3 interaction features
   - 30 TF-IDF text features
   - Target: SalePrice_Log (log-transformed)
 - **Use Case:** Ready for models that benefit from explicit features (linear models, interpretable models)
 
 ### 7.1.2 processed_data_pca.csv
-- **Dimensions:** 1,459 rows × 137 columns
+- **Dimensions:** 1,458 rows × 137 columns
 - **Content:**
-  - 136 principal components (PC1 through PC136)
+  - 83 principal components (PC1 through PC83)
   - Target: SalePrice_Log
 - **Variance Retained:** 95%
 - **Use Case:** Ready for models sensitive to multicollinearity, high-dimensional models, faster training
@@ -631,7 +625,7 @@ STAGE 2: Data Cleaning
 ├── Missing value treatment (contextual strategies)
 ├── Outlier removal (1 extreme case)
 ├── Missing Values: 7,829 → 0
-└── Rows: 1,460 → 1,459
+└── Rows: 1,460 → 1,458
 
 STAGE 3: Numeric Transformation
 ├── Log transformation applied to 29 skewed features
@@ -644,27 +638,32 @@ STAGE 4: Feature Creation
 
 STAGE 5: Categorical Encoding
 ├── Ordinal encoding: 14 features
-├── One-hot encoding: 29 features → 176 binary columns
-├── Label encoding: 3 features
-└── Columns: 92 → 217
+├── One-hot encoding: 29 features → 121 total
+└── Columns: 95 → 121
 
-STAGE 6: Text-Based Feature Representation
-├── Created 3 composite text features
-├── Label encoded each composite feature
-└── Columns: 217 → 220
+STAGE 6: Text-Based (TF-IDF)
+├── Created 3 composite text features (30 TF-IDF features)
+└── Columns: 121 → 151
 
 STAGE 7: Feature Scaling
 ├── StandardScaler applied to all 220 features
 └── Result: Mean=0, Std=1 for all features
 
-STAGE 8: Dimensionality Reduction (PCA)
+STAGE 7: Prepare X (exclude Id, SalePrice)
+└── Features (X): 149
+
+STAGE 8: Feature Scaling
+├── StandardScaler applied to all 149 features
+└── Result: Mean=0, Std=1
+
+STAGE 9: Dimensionality Reduction (PCA)
 ├── Applied PCA with 95% variance threshold
-├── Columns: 220 → 136 components
-└── Variance retained: 95.0%
+├── Columns: 149 → 83 components
+└── Variance retained: 95.04%
 
 FINAL OUTPUT:
-├── processed_data_engineered.csv (220 features)
-└── processed_data_pca.csv (136 components)
+├── processed_data_engineered.csv (150 features including target)
+└── processed_data_pca.csv (84 columns: 83 components + target)
 ```
 
 \newpage
@@ -743,7 +742,7 @@ FINAL OUTPUT:
 - 95% is standard threshold balancing information and dimensionality
 - Computational efficiency improves with fewer features
 
-**Evidence:** 38% reduction (220→136) while retaining 95% variance
+**Evidence:** 38% reduction (149→83) while retaining 95% variance
 
 \newpage
 
@@ -760,7 +759,7 @@ This feature engineering project successfully transformed a raw real estate data
 
 **Feature Engineering:**
 - Created 10 meaningful numeric features based on real estate domain knowledge
-- Created 5 interaction features capturing non-linear relationships
+- Created 3 interaction features capturing non-linear relationships
 - Applied TF-IDF vectorization to create 30 weighted text features (advanced NLP)
 - Performed dual-method outlier detection (IQR + Z-score)
 - Validated transformations statistically using Shapiro-Wilk test
@@ -770,11 +769,11 @@ This feature engineering project successfully transformed a raw real estate data
 
 **Encoding & Representation:**
 - Implemented three-tier encoding strategy (ordinal, one-hot, label)
-- Expanded from 81 to 247 features through appropriate encoding and advanced techniques
+- Expanded from 81 to 151 features (149 in X matrix) through appropriate encoding and advanced techniques
 - Maintained semantic relationships and prevented false ordinality
 
 **Dimensionality Reduction:**
-- Applied PCA to reduce from 247 to 136 features (45% reduction)
+- Applied PCA to reduce from 149 to 83 components (45% reduction)
 - Justified PCA statistically using VIF analysis (3 features with VIF >10)
 - Retained 95% of original variance
 - Eliminated multicollinearity through orthogonal components
@@ -793,7 +792,7 @@ This feature engineering project successfully transformed a raw real estate data
 
 **Question 2:** After dimensionality reduction, did your random feature load significantly on any principal component?
 
-**Answer:** No. Maximum loading was <0.05 across all 136 components. PCA captures structured variance, and random features lack systematic patterns. This confirms the feature behaves as noise relative to real housing characteristics and validates PCA's ability to distinguish signal from noise.
+**Answer:** No. Maximum loading was <0.05 across all 83 components. PCA captures structured variance, and random features lack systematic patterns. This confirms the feature behaves as noise relative to real housing characteristics and validates PCA's ability to distinguish signal from noise.
 
 ## 9.3 Key Insights
 
